@@ -1,7 +1,6 @@
 from django.core.management import BaseCommand
 
-from app.services import HHVacanciesParser
-from app.tasks import get_and_create_vacancies
+from app.tasks import init_search
 
 
 class Command(BaseCommand):
@@ -14,8 +13,4 @@ class Command(BaseCommand):
         To run a data's collect:
         python manage.py collect_vacancies
         """
-        hh_parser = HHVacanciesParser()
-        total_pages = hh_parser.get_total_pages()
-
-        for page in range(total_pages):
-            get_and_create_vacancies.delay(page)
+        init_search.delay()
