@@ -1,0 +1,34 @@
+version: "2.1"
+
+services:
+
+  web:
+    build: .
+    working_dir: /app
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    links:
+      - redis
+    command: /bin/sh -c "python manage.py runserver 0.0.0.0:8000 && python manage.py collect_vacancies"
+    ports:
+      - "8000:8000"
+
+  redis:
+    image: redis:latest
+    logging:
+      driver: none
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    working_dir: /app
+    volumes_from:
+      - web
+    depends_on:
+      - web
+    links:
+      - web
+    command: celery -A hh_parser.celery.app worker -l INFO --loglevel=INFO --purge --concurrency=8
